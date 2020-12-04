@@ -75,20 +75,20 @@ class File:
 
             h5_data = self.file.create_dataset(name=dname, data=data, compression=compression, **kwds)
             h5_data.attrs["_type"] = type(data).__name__
-            h5_data.attrs["_name_type"] = "str" if isinstance(name, str) else type(name[-1]).__name__
+            h5_data.attrs["_name_type"] = "str" if any([isinstance(name, x) for x in self._atomics]) else type(name[-1]).__name__
         elif isinstance(data, self._collections):
             h5_group = self.file.create_group(name=dname, track_order=True, **kwds)
             h5_group.attrs["_type"] = type(data).__name__
-            h5_group.attrs["_name_type"] = "str" if isinstance(name, str) else type(name[-1]).__name__
+            h5_group.attrs["_name_type"] = "str" if any([isinstance(name, x) for x in self._atomics]) else type(name[-1]).__name__
 
             if isinstance(data, dict):
                 for k, v in data.items():
-                    next_name = (name, k) if isinstance(name, str) else (*name, k)
+                    next_name = (name, k) if any([isinstance(name, x) for x in self._atomics]) else (*name, k)
                     self.create_any(name=next_name, data=v, compression=compression, overwrite=overwrite, **kwds)
             else:
                 # auto-generate keys for list/tuple
                 for k, v in enumerate(data):
-                    next_name = (name, k) if isinstance(name, str) else (*name, k)
+                    next_name = (name, k) if any([isinstance(name, x) for x in self._atomics]) else (*name, k)
                     self.create_any(name=next_name, data=v, compression=compression, overwrite=overwrite, **kwds)
         else:
             raise IOError(f"Data type {data.type} not supported")
